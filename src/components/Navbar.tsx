@@ -5,16 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { usePetro } from "@/context/PetroContext";
 import { formatNumber } from "@/lib/utils";
-import {
-  Flame,
-  Gauge,
-  Layers,
-  FileText,
-  ShieldAlert,
-  ShieldCheck,
-  RefreshCw,
-  AlertTriangle,
-} from "lucide-react";
+import { Flame, Gauge, Layers, FileText, ShieldAlert, ShieldCheck, RefreshCw, Activity } from "lucide-react";
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -23,8 +14,8 @@ export const Navbar: React.FC = () => {
   const navItems = [
     { label: "Gathering SCADA", href: "/", icon: Gauge },
     { label: "3-Phase Separator", href: "/separator/", icon: Layers },
-    { label: "Drilling Mud Log", href: "/mudlog/", icon: AlertTriangle, badge: "Sprint 3" },
-    { label: "Custody B/L A4", href: "/custody/", icon: FileText, badge: "Sprint 3" },
+    { label: "Drilling Mud Log", href: "/mudlog/", icon: Activity },
+    { label: "SKK Migas Custody A4", href: "/custody/", icon: FileText },
   ];
 
   return (
@@ -54,7 +45,6 @@ export const Navbar: React.FC = () => {
             <span className="text-orange-400 font-bold">{kpis.fieldWaterCutAvgPct}%</span>
           </div>
         </div>
-
         <div className="flex items-center gap-3">
           {esdStatus === "ESD_TRIPPED" ? (
             <button
@@ -71,24 +61,23 @@ export const Navbar: React.FC = () => {
               <ShieldAlert className="w-3 h-3 text-rose-400" /> TRIP ESD-001
             </button>
           )}
-
-          <div
-            className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold uppercase ${
-              esdStatus === "ESD_TRIPPED"
-                ? "bg-rose-900/60 text-rose-300 border border-rose-500"
-                : "bg-emerald-950/60 text-emerald-300 border border-emerald-500/40"
-            }`}
-          >
-            {esdStatus === "ESD_TRIPPED" ? (
-              <>
-                <ShieldAlert className="w-3.5 h-3.5" /> ESD TRIPPED
-              </>
-            ) : (
-              <>
-                <ShieldCheck className="w-3.5 h-3.5" /> ESD ARMED
-              </>
-            )}
-          </div>
+        </div>
+        <div
+          className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold uppercase ${
+            esdStatus === "ESD_TRIPPED"
+              ? "bg-rose-900/60 text-rose-300 border border-rose-500"
+              : "bg-emerald-950/60 text-emerald-300 border border-emerald-500/40"
+          }`}
+        >
+          {esdStatus === "ESD_TRIPPED" ? (
+            <>
+              <ShieldAlert className="w-3.5 h-3.5" /> ESD TRIPPED
+            </>
+          ) : (
+            <>
+              <ShieldCheck className="w-3.5 h-3.5" /> ESD ARMED
+            </>
+          )}
         </div>
       </div>
 
@@ -108,7 +97,6 @@ export const Navbar: React.FC = () => {
             <p className="text-[11px] font-mono text-slate-400">Offshore Wellhead & Multi-Phase Pipeline ERP</p>
           </div>
         </div>
-
         <nav className="flex items-center gap-1 sm:gap-2">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -125,11 +113,6 @@ export const Navbar: React.FC = () => {
               >
                 <Icon className={`w-4 h-4 ${isActive ? "text-sky-400" : "text-slate-400"}`} />
                 <span>{item.label}</span>
-                {item.badge && (
-                  <span className="text-[9px] px-1.5 py-0.2 font-mono bg-amber-950/80 text-amber-300 rounded border border-amber-800/40">
-                    {item.badge}
-                  </span>
-                )}
               </Link>
             );
           })}

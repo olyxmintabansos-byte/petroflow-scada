@@ -8,6 +8,9 @@ import {
   FlareStack,
   PetroProductionKPIs,
   EsdStatus,
+  MudLogRecord,
+  BopTestRecord,
+  CustodyTransferCertificate,
 } from "@/types/petro";
 
 const INITIAL_WELLHEADS: Wellhead[] = [
@@ -131,6 +134,97 @@ const INITIAL_FLARE: FlareStack = {
   hydrocarbonLossKgHr: 12.4,
 };
 
+const INITIAL_MUD_LOG: MudLogRecord = {
+  depthMeasuredM: 3450.5,
+  depthTrueVerticalM: 3120.2,
+  ropMetersPerHr: 16.4,
+  weightOnBitKlbs: 22.5,
+  rotarySpeedRpm: 115,
+  torqueKftLb: 14.2,
+  standpipePressurePsi: 3240,
+  mudWeightInPpg: 11.4,
+  mudWeightOutPpg: 11.6,
+  flowInGpm: 480,
+  flowOutPct: 51,
+  pitVolumeBbls: 840,
+  totalGasUnits: 460,
+  chromatography: {
+    c1MethanePct: 83.4,
+    c2EthanePct: 8.8,
+    c3PropanePct: 4.6,
+    ic4IsobutanePct: 1.4,
+    nc4NormalButanePct: 1.2,
+    c5PlusPentanesPct: 0.6,
+  },
+  lithology: "SANDSTONE",
+  isGasKickDetected: false,
+};
+
+const INITIAL_BOP_TESTS: BopTestRecord[] = [
+  {
+    component: "Annular Preventer (Hydril 11\" 5K)",
+    ratedWorkingPressurePsi: 5000,
+    lowTestPressurePsi: 250,
+    highTestPressurePsi: 3500,
+    durationMins: 10,
+    status: "PASS_VERIFIED",
+    inspectionDate: "2026-09-24",
+  },
+  {
+    component: "Upper Pipe Rams (Cameron 11\" 10K)",
+    ratedWorkingPressurePsi: 10000,
+    lowTestPressurePsi: 250,
+    highTestPressurePsi: 10000,
+    durationMins: 10,
+    status: "PASS_VERIFIED",
+    inspectionDate: "2026-09-24",
+  },
+  {
+    component: "Blind Shear Rams (Cameron 11\" 10K)",
+    ratedWorkingPressurePsi: 10000,
+    lowTestPressurePsi: 250,
+    highTestPressurePsi: 10000,
+    durationMins: 10,
+    status: "PASS_VERIFIED",
+    inspectionDate: "2026-09-24",
+  },
+  {
+    component: "Choke & Kill Manifold Valves",
+    ratedWorkingPressurePsi: 10000,
+    lowTestPressurePsi: 250,
+    highTestPressurePsi: 10000,
+    durationMins: 10,
+    status: "PASS_VERIFIED",
+    inspectionDate: "2026-09-24",
+  },
+];
+
+const INITIAL_CUSTODY_CERT: CustodyTransferCertificate = {
+  billOfLadingNo: "BL/SKK-MIGAS/BKP/2026/09/014",
+  skkMigasPermitNo: "SKK/PST/EXP-OFF/7892/IX/2026",
+  operatorKkks: "PT ENI INDONESIA / PT PERTAMINA HULU MAHAKAM",
+  offshoreField: "BEKAPAI FIELD, OFFSHORE EAST KALIMANTAN",
+  loadingTerminal: "SENIPAH CRUDE & CONDENSATE TERMINAL SBM-02",
+  tankerVesselName: "MT MAHAKAM PIONEER",
+  vesselFlag: "INDONESIA (JAKARTA)",
+  destinationPort: "RU V CILACAP REFINERY JETTY",
+  loadingDate: "25 SEPTEMBER 2026",
+  observedApiGravity: 36.4,
+  observedTempF: 84.5,
+  standardApi60F: 34.8,
+  volumeCorrectionFactor: 0.9884,
+  grossObservedVolumeBbls: 150000,
+  grossStandardVolumeBbls: 148260,
+  basicSedimentWaterPct: 0.16,
+  bswDeductionBbls: 237.2,
+  netStandardVolumeBbls: 148022.8,
+  metricTonsEquivalent: 20184.4,
+  chiefGaugerName: "Ir. Hendro Wicaksono, ST (SKK Migas)",
+  oimName: "Capt. Budi Prasetyo, M.Mar (KKKS OIM)",
+  tankerMasterName: "Capt. Donald Arisandi (Master MT Mahakam)",
+  fiscalVerificationCode: "SKK-VERIF-BKP-9884-9A21",
+};
+
 interface PetroContextType {
   wellheads: Wellhead[];
   separator: ThreePhaseSeparator;
@@ -138,12 +232,24 @@ interface PetroContextType {
   flare: FlareStack;
   kpis: PetroProductionKPIs;
   esdStatus: EsdStatus;
+  mudLog: MudLogRecord;
+  bopTests: BopTestRecord[];
+  custodyCert: CustodyTransferCertificate;
   updateChokeOpening: (id: string, newChokePct: number) => void;
   toggleWellStatus: (id: string) => void;
   triggerEmergencyShutdown: () => void;
   resetEsdSystem: () => void;
   toggleCompressorState: () => void;
   adjustSeparatorPressure: (deltaPsi: number) => void;
+  advanceDrillingStep: () => void;
+  triggerGasKickSimulation: () => void;
+  resolveGasKickAndKill: () => void;
+  updateCustodyParameters: (
+    observedGrossBbls: number,
+    apiObserved: number,
+    tempF: number,
+    bswPct: number
+  ) => void;
   resetToDefaults: () => void;
 }
 
@@ -155,16 +261,23 @@ export const PetroProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [compressor, setCompressor] = useState<CompressorTrain>(INITIAL_COMPRESSOR);
   const [flare, setFlare] = useState<FlareStack>(INITIAL_FLARE);
   const [esdStatus, setEsdStatus] = useState<EsdStatus>("NORMAL_ARMED");
+  const [mudLog, setMudLog] = useState<MudLogRecord>(INITIAL_MUD_LOG);
+  const [bopTests] = useState<BopTestRecord[]>(INITIAL_BOP_TESTS);
+  const [custodyCert, setCustodyCert] = useState<CustodyTransferCertificate>(INITIAL_CUSTODY_CERT);
 
-  // Load from LocalStorage
+  // Sync from LocalStorage
   useEffect(() => {
     try {
       const savedWells = localStorage.getItem("petro_wellheads_v1");
       const savedSep = localStorage.getItem("petro_sep_v1");
       const savedEsd = localStorage.getItem("petro_esd_v1");
+      const savedMud = localStorage.getItem("petro_mudlog_v1");
+      const savedCustody = localStorage.getItem("petro_custody_v1");
       if (savedWells) setWellheads(JSON.parse(savedWells));
       if (savedSep) setSeparator(JSON.parse(savedSep));
       if (savedEsd) setEsdStatus(JSON.parse(savedEsd));
+      if (savedMud) setMudLog(JSON.parse(savedMud));
+      if (savedCustody) setCustodyCert(JSON.parse(savedCustody));
     } catch {
       console.warn("Storage sync fallback");
     }
@@ -175,9 +288,11 @@ export const PetroProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem("petro_wellheads_v1", JSON.stringify(wellheads));
     localStorage.setItem("petro_sep_v1", JSON.stringify(separator));
     localStorage.setItem("petro_esd_v1", JSON.stringify(esdStatus));
-  }, [wellheads, separator, esdStatus]);
+    localStorage.setItem("petro_mudlog_v1", JSON.stringify(mudLog));
+    localStorage.setItem("petro_custody_v1", JSON.stringify(custodyCert));
+  }, [wellheads, separator, esdStatus, mudLog, custodyCert]);
 
-  // Recalculate KPIs
+  // Dynamic KPI Recalculation
   const isTripped = esdStatus === "ESD_TRIPPED";
   const activeWells = wellheads.filter((w) => w.status !== "MAINTENANCE_BLOWDOWN");
 
@@ -279,34 +394,132 @@ export const PetroProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }));
   };
 
+  // Sprint 3: Mud Logging Logic
+  const advanceDrillingStep = () => {
+    setMudLog((prev) => {
+      const newMd = parseFloat((prev.depthMeasuredM + 4.2).toFixed(1));
+      const newTvd = parseFloat((prev.depthTrueVerticalM + 3.8).toFixed(1));
+      const lithoCycle: ("SANDSTONE" | "SHALE" | "LIMESTONE" | "COAL")[] = [
+        "SANDSTONE",
+        "SHALE",
+        "LIMESTONE",
+        "COAL",
+      ];
+      const nextLitho = lithoCycle[Math.floor((newMd / 20) % 4)];
+      return {
+        ...prev,
+        depthMeasuredM: newMd,
+        depthTrueVerticalM: newTvd,
+        ropMetersPerHr: parseFloat((14 + Math.random() * 6).toFixed(1)),
+        weightOnBitKlbs: parseFloat((21 + Math.random() * 3).toFixed(1)),
+        standpipePressurePsi: Math.round(3200 + Math.random() * 80),
+        lithology: nextLitho,
+      };
+    });
+  };
+
+  const triggerGasKickSimulation = () => {
+    setMudLog((prev) => ({
+      ...prev,
+      isGasKickDetected: true,
+      totalGasUnits: 2850, // Massive gas surge
+      mudWeightOutPpg: 10.8, // Cut by gas
+      flowOutPct: 74, // Flow out > Flow in (Pit Gain)
+      pitVolumeBbls: prev.pitVolumeBbls + 38,
+      chromatography: {
+        c1MethanePct: 91.2,
+        c2EthanePct: 5.4,
+        c3PropanePct: 2.1,
+        ic4IsobutanePct: 0.7,
+        nc4NormalButanePct: 0.4,
+        c5PlusPentanesPct: 0.2,
+      },
+    }));
+  };
+
+  const resolveGasKickAndKill = () => {
+    setMudLog((prev) => ({
+      ...prev,
+      isGasKickDetected: false,
+      totalGasUnits: 460,
+      mudWeightInPpg: 12.0, // Weighted up kill mud
+      mudWeightOutPpg: 12.0,
+      flowOutPct: 51,
+      chromatography: INITIAL_MUD_LOG.chromatography,
+    }));
+  };
+
+  // Sprint 4: ASTM D1250 Fiscal Custody Calculation
+  const updateCustodyParameters = (
+    observedGrossBbls: number,
+    apiObserved: number,
+    tempF: number,
+    bswPct: number
+  ) => {
+    // ASTM D1250 Table 5A: Standard API @ 60°F approximation
+    const deltaT = tempF - 60;
+    const stdApi = parseFloat((apiObserved - 0.065 * deltaT).toFixed(1));
+    // Table 6A Volume Correction Factor (VCF)
+    const thermalExpansionAlpha = 0.00048;
+    const vcf = parseFloat((1 - thermalExpansionAlpha * deltaT).toFixed(4));
+
+    const gsv = Math.round(observedGrossBbls * vcf);
+    const bswDeduction = parseFloat((gsv * (bswPct / 100)).toFixed(1));
+    const nsv = parseFloat((gsv - bswDeduction).toFixed(1));
+    const metricTons = parseFloat((nsv * 0.1363).toFixed(1));
+
+    setCustodyCert((prev) => ({
+      ...prev,
+      grossObservedVolumeBbls: observedGrossBbls,
+      observedApiGravity: apiObserved,
+      observedTempF: tempF,
+      standardApi60F: stdApi,
+      volumeCorrectionFactor: vcf,
+      grossStandardVolumeBbls: gsv,
+      basicSedimentWaterPct: bswPct,
+      bswDeductionBbls: bswDeduction,
+      netStandardVolumeBbls: nsv,
+      metricTonsEquivalent: metricTons,
+    }));
+  };
+
   const resetToDefaults = () => {
     setWellheads(INITIAL_WELLHEADS);
     setSeparator(INITIAL_SEPARATOR);
     setCompressor(INITIAL_COMPRESSOR);
     setFlare(INITIAL_FLARE);
     setEsdStatus("NORMAL_ARMED");
-    localStorage.removeItem("petro_wellheads_v1");
-    localStorage.removeItem("petro_sep_v1");
-    localStorage.removeItem("petro_esd_v1");
+    setMudLog(INITIAL_MUD_LOG);
+    setCustodyCert(INITIAL_CUSTODY_CERT);
+    localStorage.clear();
   };
 
   return (
     <PetroContext.Provider
-      value={{
-        wellheads,
-        separator,
-        compressor,
-        flare,
-        kpis,
-        esdStatus,
-        updateChokeOpening,
-        toggleWellStatus,
-        triggerEmergencyShutdown,
-        resetEsdSystem,
-        toggleCompressorState,
-        adjustSeparatorPressure,
-        resetToDefaults,
-      }}
+      value={
+        {
+          wellheads,
+          separator,
+          compressor,
+          flare,
+          kpis,
+          esdStatus,
+          mudLog,
+          bopTests,
+          custodyCert,
+          updateChokeOpening,
+          toggleWellStatus,
+          triggerEmergencyShutdown,
+          resetEsdSystem,
+          toggleCompressorState,
+          adjustSeparatorPressure,
+          advanceDrillingStep,
+          triggerGasKickSimulation,
+          resolveGasKickAndKill,
+          updateCustodyParameters,
+          resetToDefaults,
+        }
+      }
     >
       {children}
     </PetroContext.Provider>
