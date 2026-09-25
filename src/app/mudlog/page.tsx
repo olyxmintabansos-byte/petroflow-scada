@@ -293,15 +293,15 @@ export default function MudLoggingPage() {
             </div>
             <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800">
               <span className="text-slate-500">Pump Flow Rate:</span>
-              <p className="text-sm font-bold text-emerald-400>{mudLog.flowInGpm} GPM (2x Triplex)</p>
+              <p className="text-sm font-bold text-emerald-400">{mudLog.flowInGpm} GPM (2x Triplex)</p>
             </div>
             <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800">
               <span className="text-slate-500">Return Flow Sensor:</span>
-              <p className="text-sm font-bold text-amber-400>{mudLog.flowOutPct}% Paddle Deflection</p>
+              <p className="text-sm font-bold text-amber-400">{mudLog.flowOutPct}% Paddle Deflection</p>
             </div>
             <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800">
               <span className="text-slate-500">Drill String Torque:</span>
-              <p className="text-sm font-bold text-slate-200>{mudLog.torqueKftLb} kft-lb</p>
+              <p className="text-sm font-bold text-slate-200">{mudLog.torqueKftLb} kft-lb</p>
             </div>
           </div>
         </div>
@@ -331,7 +331,7 @@ export default function MudLoggingPage() {
               <p className="text-slate-500 text-[10px]">Rated: {bop.ratedWorkingPressurePsi} PSI</p>
               <div className="flex justify-between text-[11px] pt-1 border-t border-slate-800">
                 <span className="text-slate-400">Low/High Test:</span>
-                <span className="text-emerald-400 font-bold>{bop.lowTestPressurePsi}/{bop.highTestPressurePsi} PSI</span>
+                <span className="text-emerald-400 font-bold">{bop.lowTestPressurePsi}/{bop.highTestPressurePsi} PSI</span>
               </div>
               <div className="flex justify-between text-[10px] text-slate-500">
                 <span>Hold Duration:</span>
