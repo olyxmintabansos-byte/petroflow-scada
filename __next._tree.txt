@@ -1,2 +1,2 @@
-:HL["/petroflow-scada/_next/static/chunks/0tu7w2cl95-db.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}},"staleTime":300,"buildId":"1oaVdf5-kuN5ozac37Y3_"}
+:HL["/petroflow-scada/_next/static/chunks/3hd0lborix5pz.css","style"]
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}},"staleTime":300,"buildId":"uFNbGALbi1LHSIAiIiZPa"}
